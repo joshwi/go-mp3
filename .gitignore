@@ -1,0 +1,5 @@
+*.env
+*DS_Store
+./Music
+*.mp3
+*.m4a

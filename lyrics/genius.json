@@ -1,0 +1,24 @@
+[
+    {
+        "Name": "genius_song_lyrics",
+        "Tag": {
+            "name": "genius_song_lyrics",
+            "value": "genius_song_lyrics"
+        },
+        "Urls": ["https://genius.com/{url}"],
+        "Params": ["url"],
+        "Keys": null,
+        "Parser": [
+            {
+                "label": "",
+                "tags": null,
+                "regex": [
+                    {
+                        "Name": "(?ms)<div.*?id=\"lyrics-root\".*?>(?P<lyrics>(.*?))<div class=\"Lyrics__Footer",
+                        "Value": {}
+                    }
+                ]
+            }
+        ]
+    }
+]
