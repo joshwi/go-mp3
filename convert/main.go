@@ -14,9 +14,13 @@ import (
 	"github.com/joshwi/go-utils/utils"
 )
 
-var regexp_1 = regexp.MustCompile(`[^a-zA-Z\d\/]+`)
-var regexp_2 = regexp.MustCompile(`\_{2,}`)
-var regexp_3 = regexp.MustCompile(`\.\_.*?\.\w{3}`)
+var (
+	directory = os.Getenv("DIRECTORY")
+)
+
+var a0 = regexp.MustCompile(`[^a-zA-Z\d\/]+`)
+var a1 = regexp.MustCompile(`\_{2,}`)
+var a2 = regexp.MustCompile(`\.\_.*?\.\w{3}`)
 
 func FormatPath(base string, location string) {
 	new_path := strings.ReplaceAll(base+location, " ", "_")
@@ -25,11 +29,11 @@ func FormatPath(base string, location string) {
 
 	new_path = strings.ReplaceAll(new_path, ext, "")
 
-	new_path = regexp_1.ReplaceAllString(new_path, "_")
+	new_path = a0.ReplaceAllString(new_path, "_")
 
 	new_path += ext
 
-	new_path = regexp_2.ReplaceAllString(new_path, "_")
+	new_path = a1.ReplaceAllString(new_path, "_")
 
 	_, err := os.Stat(new_path)
 	if os.IsNotExist(err) {
@@ -63,8 +67,6 @@ func main() {
 		Reformat all m4a files to mp3
 
 	*/
-
-	directory := "/Users/josh/Desktop/m4a/Music"
 
 	m4a := []string{}
 	commands := []string{}

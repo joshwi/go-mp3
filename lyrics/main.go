@@ -73,7 +73,7 @@ func main() {
 
 	audit_list := map[string]string{}
 
-	songs, _ := graphdb.RunCypher(session, "MATCH (n:music) WHERE n.album=\"Illmatic\" RETURN n.label as label, n.artist as artist, n.title as title, n.lyrics as lyrics")
+	songs, _ := graphdb.RunCypher(session, query)
 
 	for _, entry := range songs {
 		var label string
@@ -97,8 +97,6 @@ func main() {
 		audit_list[label] = base_url + param
 	}
 
-	log.Println(audit_list)
-
 	for k, v := range audit_list {
 		response, _ := utils.Get(v, map[string]string{})
 		if response.Status == 200 {
@@ -113,8 +111,10 @@ func main() {
 					lyrics = b5.ReplaceAllString(lyrics, "]\n")
 					lyrics = b6.ReplaceAllString(lyrics, "")
 					lyrics = html.UnescapeString(lyrics)
-					output := graphdb.PutNode(session, "music", k, []utils.Tag{{Name: "lyrics", Value: lyrics}})
-					log.Println(output)
+					err := graphdb.PutNode(session, "music", k, []utils.Tag{{Name: "lyrics", Value: lyrics}})
+					if err != nil {
+						log.Println(err)
+					}
 				}
 			}
 		}

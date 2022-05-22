@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -32,17 +33,27 @@ var (
 		"comments": "COMM",
 		"lyrics":   "USLT",
 	}
+	// Init flag values
+	query   string
+	logfile string
 )
 
-var regexp_1 = regexp.MustCompile(`\s+`)
-var regexp_2 = regexp.MustCompile(`[^a-zA-Z\d]+`)
-var regexp_3 = regexp.MustCompile(`\_{2,}`)
-
 func init() {
-	logger.InitLog("../script.log")
+
+	// Define flag arguments for the application
+	flag.StringVar(&query, `q`, ``, `Run query to DB for input parameters. Default: <empty>`)
+	flag.StringVar(&logfile, `l`, `../script.log`, `Location of script logfile. Default: ../script.log`)
+	flag.Parse()
+
+	// Initialize logfile at user given path. Default: ./collection.log
+	logger.InitLog(logfile)
 
 	logger.Logger.Info().Str("status", "start").Msg("READ TAGS")
 }
+
+var a0 = regexp.MustCompile(`\s+`)
+var a1 = regexp.MustCompile(`[^a-zA-Z\d]+`)
+var a2 = regexp.MustCompile(`\_{2,}`)
 
 func WriteTags(dir string, filename string, properties []utils.Tag) error {
 	tag, err := id3v2.Open(dir+filename, id3v2.Options{Parse: true})
@@ -138,9 +149,9 @@ func ReadTags(dir string, filename string) ([]utils.Tag, string, error) {
 
 	// Build unique label for DB entry
 	label := tag.Artist() + "_" + tag.Album() + "_" + tracks[0]
-	label = regexp_1.ReplaceAllString(label, "_")
-	label = regexp_2.ReplaceAllString(label, "_")
-	label = regexp_3.ReplaceAllString(label, "_")
+	label = a0.ReplaceAllString(label, "_")
+	label = a1.ReplaceAllString(label, "_")
+	label = a2.ReplaceAllString(label, "_")
 
 	logger.Logger.Info().Str("filename", filename).Str("status", "success").Msg("ReadTags")
 

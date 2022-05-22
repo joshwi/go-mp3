@@ -12,16 +12,8 @@ import (
 )
 
 var (
-	DIRECTORY = os.Getenv("DIRECTORY")
-	USERNAME  = os.Getenv("NEO4J_USERNAME")
-	PASSWORD  = os.Getenv("NEO4J_PASSWORD")
-	HOST      = os.Getenv("NEO4J_SERVICE_HOST")
-	PORT      = os.Getenv("NEO4J_SERVICE_PORT")
+	directory = os.Getenv("DIRECTORY")
 )
-
-var regexp_1 = regexp.MustCompile(`[^a-zA-Z\d\/]+`)
-var regexp_2 = regexp.MustCompile(`\_{2,}`)
-var regexp_3 = regexp.MustCompile(`\.\_.*?\.\w{3}`)
 
 func FormatPath(base string, location string) {
 	new_path := strings.ReplaceAll(base+location, " ", "_")
@@ -30,11 +22,11 @@ func FormatPath(base string, location string) {
 
 	new_path = strings.ReplaceAll(new_path, ext, "")
 
-	new_path = regexp_1.ReplaceAllString(new_path, "_")
+	new_path = a0.ReplaceAllString(new_path, "_")
 
 	new_path += ext
 
-	new_path = regexp_2.ReplaceAllString(new_path, "_")
+	new_path = a1.ReplaceAllString(new_path, "_")
 
 	_, err := os.Stat(new_path)
 	if os.IsNotExist(err) {
@@ -47,9 +39,13 @@ func FormatPath(base string, location string) {
 	}
 }
 
+var a0 = regexp.MustCompile(`[^a-zA-Z\d\/]+`)
+var a1 = regexp.MustCompile(`\_{2,}`)
+var a2 = regexp.MustCompile(`\.\_.*?\.\w{3}`)
+
 func main() {
 
-	filetree, _ := utils.Scan(DIRECTORY)
+	filetree, _ := utils.Scan(directory)
 
 	directories := []string{}
 	files := []string{}
@@ -60,9 +56,9 @@ func main() {
 
 	for _, item := range filetree {
 		name := path.Base(item)
-		match := regexp_3.FindString(name)
+		match := a2.FindString(name)
 		if len(match) > 0 {
-			info, err := os.Stat(DIRECTORY + item)
+			info, err := os.Stat(directory + item)
 			if os.IsNotExist(err) {
 				log.Println(item)
 				log.Fatal("File does not exist.")
@@ -76,7 +72,7 @@ func main() {
 	}
 
 	for _, entry := range files {
-		err := os.RemoveAll(DIRECTORY + entry)
+		err := os.RemoveAll(directory + entry)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -95,7 +91,7 @@ func main() {
 
 	*/
 
-	filetree, _ = utils.Scan(DIRECTORY)
+	filetree, _ = utils.Scan(directory)
 
 	directories = []string{}
 	files = []string{}
@@ -106,7 +102,7 @@ func main() {
 
 	for _, item := range filetree {
 		if strings.Contains(item, " ") {
-			info, err := os.Stat(DIRECTORY + item)
+			info, err := os.Stat(directory + item)
 			if os.IsNotExist(err) {
 				log.Println(item)
 				log.Fatal("File does not exist.")
@@ -120,11 +116,11 @@ func main() {
 	}
 
 	for _, entry := range files {
-		FormatPath(DIRECTORY, entry)
+		FormatPath(directory, entry)
 	}
 
 	for _, entry := range directories {
-		err := os.RemoveAll(DIRECTORY + entry)
+		err := os.RemoveAll(directory + entry)
 		if err != nil {
 			log.Fatal(err)
 		}
