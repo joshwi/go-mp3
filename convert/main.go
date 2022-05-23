@@ -1,50 +1,38 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
 
+	"github.com/joshwi/go-utils/logger"
 	"github.com/joshwi/go-utils/utils"
 )
 
 var (
 	directory = os.Getenv("DIRECTORY")
+	logfile   string
 )
+
+func init() {
+
+	// Define flag arguments for the application
+	flag.StringVar(&logfile, `l`, `../script.log`, `Location of script logfile. Default: ../script.log`)
+	flag.Parse()
+
+	// Initialize logfile at user given path. Default: ./collection.log
+	logger.InitLog(logfile)
+}
 
 var a0 = regexp.MustCompile(`[^a-zA-Z\d\/]+`)
 var a1 = regexp.MustCompile(`\_{2,}`)
 var a2 = regexp.MustCompile(`\.\_.*?\.\w{3}`)
-
-func FormatPath(base string, location string) {
-	new_path := strings.ReplaceAll(base+location, " ", "_")
-
-	ext := path.Ext(new_path)
-
-	new_path = strings.ReplaceAll(new_path, ext, "")
-
-	new_path = a0.ReplaceAllString(new_path, "_")
-
-	new_path += ext
-
-	new_path = a1.ReplaceAllString(new_path, "_")
-
-	_, err := os.Stat(new_path)
-	if os.IsNotExist(err) {
-		err = os.MkdirAll(path.Dir(new_path), 0755)
-	}
-
-	err = os.Rename(base+location, new_path)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 
 func worker(ports chan string, results chan int) {
 	for item := range ports {
@@ -68,6 +56,8 @@ func main() {
 
 	*/
 
+	logger.Logger.Info().Str("status", "start").Msg("CONVERT M4A TO MP3")
+
 	m4a := []string{}
 	commands := []string{}
 
@@ -75,40 +65,23 @@ func main() {
 
 	start := time.Now()
 
-	log.Printf("START: Formatting .m4a to .mp3")
-
 	for _, item := range filetree {
 		if strings.ToLower(filepath.Ext(item)) == ".m4a" {
 			m4a = append(m4a, item)
 		}
 	}
 
-	num_files := len(m4a)
-
 	for _, entry := range m4a {
 		rel := filepath.Clean(entry)
 		base := strings.TrimSuffix(rel, filepath.Base(entry))
 		name := strings.TrimSuffix(filepath.Base(entry), filepath.Ext(entry))
-		output := fmt.Sprintf(`-v 5 -y -i %v%v -acodec libmp3lame -ac 2 -ab 192k %v%v%v.mp3`, directory, rel, directory, base, name)
-		commands = append(commands, output)
+		new_path := fmt.Sprintf("%v%v%v.mp3", directory, base, name)
+		output := fmt.Sprintf(`-v 5 -y -i %v%v -acodec libmp3lame -ac 2 -ab 192k %v`, directory, rel, new_path)
+		_, err := os.Stat(new_path)
+		if os.IsNotExist(err) {
+			commands = append(commands, output)
+		}
 	}
-
-	// var wg sync.WaitGroup
-
-	// for _, command := range commands {
-	// 	wg.Add(1)
-	// 	go func(command string) {
-	// 		defer wg.Done()
-	// 		args := strings.Split(command, " ")
-	// 		cmd := exec.Command("ffmpeg", args...)
-	// 		err := cmd.Run()
-	// 		if err != nil {
-	// 			log.Println(err)
-	// 		}
-	// 	}(command)
-	// }
-
-	// wg.Wait()
 
 	ports := make(chan string, 100)
 	results := make(chan int)
@@ -132,20 +105,19 @@ func main() {
 		}
 	}
 
-	log.Println(pass)
-
 	close(ports)
 	close(results)
 
 	end := time.Now()
 	elapsed := end.Sub(start)
 
-	log.Printf("END: Formatting .m4a to .mp3")
+	logger.Logger.Info().Str("status", "end").Msg("CONVERT M4A TO MP3")
 
-	log.Printf("Time to proccess %v files: %v", num_files, elapsed.Round(time.Second/1000))
+	logger.Logger.Info().Msg(fmt.Sprintf("Time to proccess %v files: %v", len(commands), elapsed.Round(time.Second/1000)))
 
-	avg := (int(elapsed.Milliseconds()) / num_files)
-
-	log.Printf("%v milliseconds per file", avg)
+	if len(commands) > 0 {
+		avg := (int(elapsed.Milliseconds()) / len(commands))
+		logger.Logger.Info().Msg(fmt.Sprintf("%v milliseconds per file", avg))
+	}
 
 }

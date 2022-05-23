@@ -1,5 +1,7 @@
-*.env
 *DS_Store
-./Music
+*.env
 *.mp3
 *.m4a
+*.log
+builds
+Music

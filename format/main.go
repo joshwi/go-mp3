@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"os"
 	"path"
@@ -8,12 +10,24 @@ import (
 	"strings"
 	"time"
 
+	"github.com/joshwi/go-utils/logger"
 	"github.com/joshwi/go-utils/utils"
 )
 
 var (
 	directory = os.Getenv("DIRECTORY")
+	logfile   string
 )
+
+func init() {
+
+	// Define flag arguments for the application
+	flag.StringVar(&logfile, `l`, `../script.log`, `Location of script logfile. Default: ../script.log`)
+	flag.Parse()
+
+	// Initialize logfile at user given path. Default: ./collection.log
+	logger.InitLog(logfile)
+}
 
 func FormatPath(base string, location string) {
 	new_path := strings.ReplaceAll(base+location, " ", "_")
@@ -45,14 +59,14 @@ var a2 = regexp.MustCompile(`\.\_.*?\.\w{3}`)
 
 func main() {
 
+	logger.Logger.Info().Str("status", "start").Msg("AUDITING FILENAMES")
+
 	filetree, _ := utils.Scan(directory)
 
 	directories := []string{}
 	files := []string{}
 
 	start := time.Now()
-
-	log.Printf("START: Removing invalid filenames")
 
 	for _, item := range filetree {
 		name := path.Base(item)
@@ -81,9 +95,9 @@ func main() {
 	end := time.Now()
 	elapsed := end.Sub(start)
 
-	log.Printf("END: Removing invalid filenames")
+	logger.Logger.Info().Str("status", "end").Msg("AUDITING FILENAMES")
 
-	log.Printf("Time remove invalid filenames: %v", elapsed.Round(time.Second/1000))
+	logger.Logger.Info().Msg(fmt.Sprintf("Auditing filenames completed in: %v", elapsed.Round(time.Second/1000)))
 
 	/*
 
@@ -91,14 +105,14 @@ func main() {
 
 	*/
 
+	logger.Logger.Info().Str("status", "start").Msg("FORMAT DIR")
+
 	filetree, _ = utils.Scan(directory)
 
 	directories = []string{}
 	files = []string{}
 
 	start = time.Now()
-
-	log.Printf("START: Formatting directories")
 
 	for _, item := range filetree {
 		if strings.Contains(item, " ") {
@@ -123,14 +137,15 @@ func main() {
 		err := os.RemoveAll(directory + entry)
 		if err != nil {
 			log.Fatal(err)
+			os.Exit(1)
 		}
 	}
 
 	end = time.Now()
 	elapsed = end.Sub(start)
 
-	log.Printf("END: Formatting directories")
+	logger.Logger.Info().Str("status", "end").Msg("FORMAT DIR")
 
-	log.Printf("Time to move files & format directories: %v", elapsed.Round(time.Second/1000))
+	logger.Logger.Info().Msg(fmt.Sprintf("Formatting directories completed in: %v", elapsed.Round(time.Second/1000)))
 
 }
