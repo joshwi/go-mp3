@@ -30,7 +30,8 @@ func init() {
 }
 
 func FormatPath(base string, location string) {
-	new_path := strings.ReplaceAll(base+location, " ", "_")
+
+	new_path := strings.ReplaceAll(location, " ", "_")
 
 	ext := path.Ext(new_path)
 
@@ -42,12 +43,14 @@ func FormatPath(base string, location string) {
 
 	new_path = a1.ReplaceAllString(new_path, "_")
 
-	_, err := os.Stat(new_path)
+	abs_path := base + new_path
+
+	_, err := os.Stat(abs_path)
 	if os.IsNotExist(err) {
-		err = os.MkdirAll(path.Dir(new_path), 0755)
+		err = os.MkdirAll(path.Dir(abs_path), 0755)
 	}
 
-	err = os.Rename(base+location, new_path)
+	err = os.Rename(base+location, abs_path)
 	if err != nil {
 		log.Fatal(err)
 	}

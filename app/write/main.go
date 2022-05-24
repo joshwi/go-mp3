@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/joshwi/go-mp3/tags"
+	"github.com/joshwi/go-mp3/app/tags"
 	"github.com/joshwi/go-plugins/graphdb"
 	"github.com/joshwi/go-utils/logger"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"

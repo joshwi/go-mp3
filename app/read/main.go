@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/joshwi/go-mp3/tags"
+	"github.com/joshwi/go-mp3/app/tags"
 	"github.com/joshwi/go-plugins/graphdb"
 	"github.com/joshwi/go-utils/logger"
 	"github.com/joshwi/go-utils/utils"
@@ -116,7 +116,7 @@ func worker(driver neo4j.Driver, queue chan string, results chan int) {
 	session := driver.NewSession(sessionConfig)
 	for entry := range queue {
 		tags, label, _ := tags.ReadTags(directory, entry)
-		graphdb.PostNode(session, "music", label, tags)
+		graphdb.PutNode(session, "music", label, tags)
 		results <- 1
 	}
 	session.Close()
