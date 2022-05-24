@@ -33,8 +33,8 @@ func init() {
 
 	// Define flag arguments for the application
 	flag.StringVar(&query, `q`, ``, `Run query to DB for input parameters. Default: <empty>`)
-	flag.StringVar(&name, `n`, `pfr_team_season`, `Specify config. Default: pfr_team_season`)
-	flag.StringVar(&filename, `f`, ``, `Location of parsing config file. Default: <empty>`)
+	flag.StringVar(&name, `n`, `genius_song_lyrics`, `Specify config. Default: genius_song_lyrics`)
+	flag.StringVar(&filename, `f`, `./config/genius.json`, `Location of parsing config file. Default: ./config/genius.json`)
 	flag.StringVar(&logfile, `l`, `./run.log`, `Location of script logfile. Default: ./run.log`)
 	flag.Parse()
 
