@@ -33,7 +33,7 @@ func init() {
 
 	// Define flag arguments for the application
 	flag.StringVar(&query, `q`, ``, `Run query to DB for input parameters. Default: <empty>`)
-	flag.StringVar(&name, `c`, `pfr_team_season`, `Specify config. Default: pfr_team_season`)
+	flag.StringVar(&name, `n`, `pfr_team_season`, `Specify config. Default: pfr_team_season`)
 	flag.StringVar(&filename, `f`, ``, `Location of parsing config file. Default: <empty>`)
 	flag.StringVar(&logfile, `l`, `./script.log`, `Location of script logfile. Default: ./script.log`)
 	flag.Parse()
@@ -41,7 +41,7 @@ func init() {
 	// Initialize logfile at user given path. Default: ./collection.log
 	logger.InitLog(logfile)
 
-	logger.Logger.Info().Str("config", name).Str("query", query).Str("status", "start").Msg("LYRIC AUDIT")
+	logger.Logger.Info().Str("filename", filename).Str("config", name).Str("query", query).Str("status", "start").Msg("LYRIC AUDIT")
 }
 
 func main() {
@@ -120,7 +120,7 @@ func main() {
 		}
 	}
 
-	logger.Logger.Info().Str("config", name).Str("query", query).Str("status", "end").Msg("LYRIC AUDIT")
+	logger.Logger.Info().Str("filename", filename).Str("config", name).Str("query", query).Str("status", "end").Msg("LYRIC AUDIT")
 }
 
 // package main
