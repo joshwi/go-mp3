@@ -51,13 +51,13 @@ NEO4J_SERVICE_PORT=7687
 ```
 source .env
 ```
-4. Run the formatter script to fix file paths and convert m4a files to mp3:
-```
-bash scripts/format
-```
 3. Run the formatter script to fix file paths and convert m4a files to mp3:
 ```
 bash scripts/format
+```
+4. Run the scan script to add mp3 tags to neo4j DB:
+```
+bash scripts/scan
 ```
 5. Run audit script to add lyrics to files:
 ```
