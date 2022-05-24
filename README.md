@@ -11,11 +11,11 @@
 
 1. Path to directory containing music library (example:`/home/go-mp3/Music`)
 
-- Only mp3 and m4a files will be considered
+2. Only mp3 and m4a files will be considered
 
-2. Access to a Neo4j DB instance
+3. Access to a Neo4j DB instance
 
-3. ffmpeg installed on your machine for vm
+4. ffmpeg installed on your machine for vm
 
 ## Installation
 
