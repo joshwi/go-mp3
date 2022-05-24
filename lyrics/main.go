@@ -35,7 +35,7 @@ func init() {
 	flag.StringVar(&query, `q`, ``, `Run query to DB for input parameters. Default: <empty>`)
 	flag.StringVar(&name, `c`, `pfr_team_season`, `Specify config. Default: pfr_team_season`)
 	flag.StringVar(&filename, `f`, ``, `Location of parsing config file. Default: <empty>`)
-	flag.StringVar(&logfile, `l`, `../script.log`, `Location of script logfile. Default: ../script.log`)
+	flag.StringVar(&logfile, `l`, `./script.log`, `Location of script logfile. Default: ./script.log`)
 	flag.Parse()
 
 	// Initialize logfile at user given path. Default: ./collection.log
