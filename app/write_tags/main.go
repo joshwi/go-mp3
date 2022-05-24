@@ -38,7 +38,7 @@ func init() {
 
 	// Define flag arguments for the application
 	flag.StringVar(&query, `q`, ``, `Run query to DB for input parameters. Default: <empty>`)
-	flag.StringVar(&logfile, `l`, `./script.log`, `Location of script logfile. Default: ./script.log`)
+	flag.StringVar(&logfile, `l`, `./run.log`, `Location of script logfile. Default: ./run.log`)
 	flag.Parse()
 
 	// Initialize logfile at user given path. Default: ./collection.log

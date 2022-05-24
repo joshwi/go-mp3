@@ -53,17 +53,21 @@ source .env
 ```
 4. Run the formatter script to fix file paths and convert m4a files to mp3:
 ```
-bash ./scripts/format
+bash scripts/format
+```
+3. Run the formatter script to fix file paths and convert m4a files to mp3:
+```
+bash scripts/format
 ```
 5. Run audit script to add lyrics to files:
 ```
-bash ./scripts/audit "MF DOOM"
+bash scripts/audit "MF DOOM"
 ```
 
 ## Debug
 
 If some songs are not being fetched properly from genius, you can try to manually insert values:
 ```
-./app/builds/lyrics -q "MATCH (n:music) WHERE n.artist='MF DOOM' AND n.album='Madvillainy' AND n.lyrics='' RETURN n.label as label, 'Madvillain' as artist, n.title as title" -f "./config/genius.json" -n "genius_song_lyrics"
-./app/builds/write -q "MATCH (n:music) WHERE n.artist='MF DOOM' AND n.lyrics<>'' RETURN n.filepath as filepath, n.lyrics as lyrics"
+app/builds/audit_lyrics -q "MATCH (n:music) WHERE n.artist='MF DOOM' AND n.album='Madvillainy' AND n.lyrics='' RETURN n.label as label, 'Madvillain' as artist, n.title as title" -f "./config/genius.json" -n "genius_song_lyrics"
+app/builds/write_tags -q "MATCH (n:music) WHERE n.artist='MF DOOM' AND n.lyrics<>'' RETURN n.filepath as filepath, n.lyrics as lyrics"
 ```

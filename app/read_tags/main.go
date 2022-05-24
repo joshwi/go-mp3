@@ -40,7 +40,7 @@ func init() {
 
 	// Define flag arguments for the application
 	flag.StringVar(&query, `q`, ``, `Run query to DB for input parameters. Default: <empty>`)
-	flag.StringVar(&logfile, `l`, `./script.log`, `Location of script logfile. Default: ./script.log`)
+	flag.StringVar(&logfile, `l`, `./run.log`, `Location of script logfile. Default: ./run.log`)
 	flag.Parse()
 
 	// Initialize logfile at user given path. Default: ./collection.log
@@ -49,13 +49,45 @@ func init() {
 	logger.Logger.Info().Str("status", "start").Msg("READ TAGS")
 }
 
+func GetFiles(driver neo4j.Driver, query string) []string {
+
+	output := []string{}
+
+	sessionConfig := neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite}
+	session := driver.NewSession(sessionConfig)
+
+	defer session.Close()
+
+	songs, _ := graphdb.RunCypher(session, query)
+
+	for _, song := range songs {
+		for _, item := range song {
+			if item.Name == "filepath" {
+				output = append(output, item.Value)
+			}
+		}
+	}
+
+	return output
+
+}
+
 func main() {
 
 	// Create application session with Neo4j
 	uri := "bolt://" + host + ":" + port
 	driver := graphdb.Connect(uri, username, password)
 
-	filetree, _ := utils.Scan(directory)
+	filetree := []string{}
+
+	if len(query) > 0 {
+		filetree = GetFiles(driver, query)
+		if len(filetree) == 0 {
+			filetree, _ = utils.Scan(directory)
+		}
+	} else {
+		filetree, _ = utils.Scan(directory)
+	}
 
 	files := []string{}
 
