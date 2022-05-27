@@ -1,24 +1,19 @@
-[
-    {
-        "Name": "genius_song_lyrics",
-        "Tag": {
-            "name": "genius_song_lyrics",
-            "value": "genius_song_lyrics"
+{
+    "genius_music_lyrics": {
+        "id": {
+            "name": "genius_music_lyrics",
+            "value": "music"
         },
-        "Urls": ["https://genius.com/{url}"],
-        "Params": ["url"],
-        "Keys": null,
-        "Parser": [
+        "parser": [
             {
-                "label": "",
-                "tags": null,
-                "regex": [
+                "name": "",
+                "match": [
                     {
-                        "Name": "(?ms)<div.*?id=\"lyrics-root\".*?>(?P<lyrics>(.*?))<div class=\"Lyrics__Footer",
-                        "Value": {}
+                        "name": "(?ms)<div.*?id=\"lyrics-root\".*?>(?P<lyrics>(.*?))<div class=\"Lyrics__Footer",
+                        "value": {}
                     }
                 ]
             }
         ]
     }
-]
+}

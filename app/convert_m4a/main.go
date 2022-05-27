@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/joshwi/go-utils/logger"
-	"github.com/joshwi/go-utils/utils"
+	"github.com/joshwi/go-pkg/logger"
+	"github.com/joshwi/go-pkg/utils"
 )
 
 var (

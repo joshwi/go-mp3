@@ -8,10 +8,10 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/joshwi/go-plugins/graphdb"
-	"github.com/joshwi/go-utils/logger"
-	"github.com/joshwi/go-utils/parser"
-	"github.com/joshwi/go-utils/utils"
+	"github.com/joshwi/go-pkg/logger"
+	"github.com/joshwi/go-pkg/parser"
+	"github.com/joshwi/go-pkg/utils"
+	"github.com/joshwi/go-svc/db"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -67,13 +67,13 @@ func main() {
 
 	// Create application session with Neo4j
 	uri := "bolt://" + host + ":" + port
-	driver := graphdb.Connect(uri, username, password)
+	driver := db.Connect(uri, username, password)
 	sessionConfig := neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite}
 	session := driver.NewSession(sessionConfig)
 
 	audit_list := map[string]string{}
 
-	songs, _ := graphdb.RunCypher(session, query)
+	songs, _ := db.RunCypher(session, query)
 
 	for _, entry := range songs {
 		var label string
@@ -111,7 +111,7 @@ func main() {
 					lyrics = b5.ReplaceAllString(lyrics, "]\n")
 					lyrics = b6.ReplaceAllString(lyrics, "")
 					lyrics = html.UnescapeString(lyrics)
-					err := graphdb.PutNode(session, "music", k, []utils.Tag{{Name: "lyrics", Value: lyrics}})
+					err := db.PutNode(session, "music", k, []utils.Tag{{Name: "lyrics", Value: lyrics}})
 					if err != nil {
 						log.Println(err)
 					}

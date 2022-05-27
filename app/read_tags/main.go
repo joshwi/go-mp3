@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/joshwi/go-mp3/app/tags"
-	"github.com/joshwi/go-plugins/graphdb"
-	"github.com/joshwi/go-utils/logger"
-	"github.com/joshwi/go-utils/utils"
+	"github.com/joshwi/go-pkg/logger"
+	"github.com/joshwi/go-pkg/utils"
+	"github.com/joshwi/go-svc/db"
+	"github.com/joshwi/go-svc/tags"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -58,7 +58,7 @@ func GetFiles(driver neo4j.Driver, query string) []string {
 
 	defer session.Close()
 
-	songs, _ := graphdb.RunCypher(session, query)
+	songs, _ := db.RunCypher(session, query)
 
 	for _, song := range songs {
 		for _, item := range song {
@@ -76,7 +76,7 @@ func main() {
 
 	// Create application session with Neo4j
 	uri := "bolt://" + host + ":" + port
-	driver := graphdb.Connect(uri, username, password)
+	driver := db.Connect(uri, username, password)
 
 	filetree := []string{}
 
@@ -148,7 +148,7 @@ func worker(driver neo4j.Driver, queue chan string, results chan int) {
 	session := driver.NewSession(sessionConfig)
 	for entry := range queue {
 		tags, label, _ := tags.ReadTags(directory, entry)
-		graphdb.PutNode(session, "music", label, tags)
+		db.PutNode(session, "music", label, tags)
 		results <- 1
 	}
 	session.Close()
