@@ -15,11 +15,11 @@ import (
 )
 
 var (
-	directory = os.Getenv("DIRECTORY")
-	username  = os.Getenv("NEO4J_USERNAME")
-	password  = os.Getenv("NEO4J_PASSWORD")
-	host      = os.Getenv("NEO4J_SERVICE_HOST")
-	port      = os.Getenv("NEO4J_SERVICE_PORT")
+	DIRECTORY = os.Getenv("DIRECTORY")
+	USERNAME  = os.Getenv("NEO4J_USERNAME")
+	PASSWORD  = os.Getenv("NEO4J_PASSWORD")
+	HOST      = os.Getenv("NEO4J_SERVICE_HOST")
+	PORT      = os.Getenv("NEO4J_SERVICE_PORT")
 	types     = map[string]string{
 		"title":    "TIT2",
 		"album":    "TALB",
@@ -40,7 +40,7 @@ func init() {
 
 	// Define flag arguments for the application
 	flag.StringVar(&query, `q`, ``, `Run query to DB for input parameters. Default: <empty>`)
-	flag.StringVar(&logfile, `l`, `./run.log`, `Location of script logfile. Default: ./run.log`)
+
 	flag.Parse()
 
 	// Initialize logfile at user given path. Default: ./collection.log
@@ -75,25 +75,25 @@ func GetFiles(driver neo4j.Driver, query string) []string {
 func main() {
 
 	// Create application session with Neo4j
-	uri := "bolt://" + host + ":" + port
-	driver := db.Connect(uri, username, password)
+	uri := "bolt://" + HOST + ":" + PORT
+	driver := db.Connect(uri, USERNAME, PASSWORD)
 
 	filetree := []string{}
 
 	if len(query) > 0 {
 		filetree = GetFiles(driver, query)
 		if len(filetree) == 0 {
-			filetree, _ = utils.Scan(directory)
+			filetree, _ = utils.Scan(DIRECTORY)
 		}
 	} else {
-		filetree, _ = utils.Scan(directory)
+		filetree, _ = utils.Scan(DIRECTORY)
 	}
 
 	files := []string{}
 
 	for _, item := range filetree {
 		if strings.Contains(item, ".mp3") {
-			info, err := os.Stat(directory + item)
+			info, err := os.Stat(DIRECTORY + item)
 			if os.IsNotExist(err) {
 				log.Println(item)
 				log.Fatal("File does not exist.")
@@ -147,7 +147,7 @@ func worker(driver neo4j.Driver, queue chan string, results chan int) {
 	sessionConfig := neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite}
 	session := driver.NewSession(sessionConfig)
 	for entry := range queue {
-		tags, label, _ := tags.ReadTags(directory, entry)
+		tags, label, _ := tags.ReadTags(DIRECTORY, entry)
 		db.PutNode(session, "music", label, tags)
 		results <- 1
 	}

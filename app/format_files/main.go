@@ -15,14 +15,14 @@ import (
 )
 
 var (
-	directory = os.Getenv("DIRECTORY")
+	DIRECTORY = os.Getenv("DIRECTORY")
 	logfile   string
 )
 
 func init() {
 
 	// Define flag arguments for the application
-	flag.StringVar(&logfile, `l`, `./run.log`, `Location of script logfile. Default: ./run.log`)
+
 	flag.Parse()
 
 	// Initialize logfile at user given path. Default: ./collection.log
@@ -64,7 +64,7 @@ func main() {
 
 	logger.Logger.Info().Str("status", "start").Msg("AUDITING FILENAMES")
 
-	filetree, _ := utils.Scan(directory)
+	filetree, _ := utils.Scan(DIRECTORY)
 
 	directories := []string{}
 	files := []string{}
@@ -75,7 +75,7 @@ func main() {
 		name := path.Base(item)
 		match := a2.FindString(name)
 		if len(match) > 0 {
-			info, err := os.Stat(directory + item)
+			info, err := os.Stat(DIRECTORY + item)
 			if os.IsNotExist(err) {
 				log.Println(item)
 				log.Fatal("File does not exist.")
@@ -89,7 +89,7 @@ func main() {
 	}
 
 	for _, entry := range files {
-		err := os.RemoveAll(directory + entry)
+		err := os.RemoveAll(DIRECTORY + entry)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -110,7 +110,7 @@ func main() {
 
 	logger.Logger.Info().Str("status", "start").Msg("FORMAT DIR")
 
-	filetree, _ = utils.Scan(directory)
+	filetree, _ = utils.Scan(DIRECTORY)
 
 	directories = []string{}
 	files = []string{}
@@ -119,7 +119,7 @@ func main() {
 
 	for _, item := range filetree {
 		if strings.Contains(item, " ") {
-			info, err := os.Stat(directory + item)
+			info, err := os.Stat(DIRECTORY + item)
 			if os.IsNotExist(err) {
 				log.Println(item)
 				log.Fatal("File does not exist.")
@@ -133,11 +133,11 @@ func main() {
 	}
 
 	for _, entry := range files {
-		FormatPath(directory, entry)
+		FormatPath(DIRECTORY, entry)
 	}
 
 	for _, entry := range directories {
-		err := os.RemoveAll(directory + entry)
+		err := os.RemoveAll(DIRECTORY + entry)
 		if err != nil {
 			log.Fatal(err)
 			os.Exit(1)

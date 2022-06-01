@@ -16,18 +16,18 @@ import (
 )
 
 var (
-	directory = os.Getenv("DIRECTORY")
-	logfile   string
+	DIRECTORY = os.Getenv("DIRECTORY")
+	LOGFILE   = os.Getenv("LOGFILE")
 )
 
 func init() {
 
 	// Define flag arguments for the application
-	flag.StringVar(&logfile, `l`, `./run.log`, `Location of script logfile. Default: ./run.log`)
+
 	flag.Parse()
 
 	// Initialize logfile at user given path. Default: ./collection.log
-	logger.InitLog(logfile)
+	logger.InitLog(LOGFILE)
 }
 
 var a0 = regexp.MustCompile(`[^a-zA-Z\d\/]+`)
@@ -61,7 +61,7 @@ func main() {
 	m4a := []string{}
 	commands := []string{}
 
-	filetree, _ := utils.Scan(directory)
+	filetree, _ := utils.Scan(DIRECTORY)
 
 	start := time.Now()
 
@@ -75,8 +75,8 @@ func main() {
 		rel := filepath.Clean(entry)
 		base := strings.TrimSuffix(rel, filepath.Base(entry))
 		name := strings.TrimSuffix(filepath.Base(entry), filepath.Ext(entry))
-		new_path := fmt.Sprintf("%v%v%v.mp3", directory, base, name)
-		output := fmt.Sprintf(`-v 5 -y -i %v%v -acodec libmp3lame -ac 2 -ab 192k %v`, directory, rel, new_path)
+		new_path := fmt.Sprintf("%v%v%v.mp3", DIRECTORY, base, name)
+		output := fmt.Sprintf(`-v 5 -y -i %v%v -acodec libmp3lame -ac 2 -ab 192k %v`, DIRECTORY, rel, new_path)
 		_, err := os.Stat(new_path)
 		if os.IsNotExist(err) {
 			commands = append(commands, output)

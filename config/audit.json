@@ -1,0 +1,42 @@
+{
+    "audit_lyrics_url": [
+        {
+            "name": "",
+            "value": "[^a-zA-Z0-9\\-\\s]+"
+        },
+        {
+            "name": "-",
+            "value": "\\s+"
+        }
+    ],
+    "audit_lyrics_html": [
+        {
+            "name": "",
+            "value": "<h2.*h2>"
+        },
+        {
+            "name": "",
+            "value": "<i>|<\/i>"
+        },
+        {
+            "name": "\n",
+            "value": "<[^>].*?>"
+        },
+        {
+            "name": "\n",
+            "value": "\n+"
+        },
+        {
+            "name": "\n[",
+            "value": "\\["
+        },
+        {
+            "name": "]\n",
+            "value": "\\]"
+        },
+        {
+            "name": "",
+            "value": "\n$|^\n"
+        }
+    ]
+}

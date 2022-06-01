@@ -22,10 +22,11 @@ github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMyw
 github.com/google/go-cmp v0.4.0/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
-github.com/joshwi/go-pkg v0.0.0 h1:UupJhqTRsiETEitbsi6PnTfZ+GsRBpfTKKqefTGag2I=
 github.com/joshwi/go-pkg v0.0.0/go.mod h1:8RCfPZhV4voqzoBDNm40o2boC53i0WOlQn6qBFjB0TE=
-github.com/joshwi/go-svc/db v0.0.0 h1:cHmiPojKXl2T8rc2jd2R7CqT1Irvv0U8d5IDX3rhPiI=
-github.com/joshwi/go-svc/db v0.0.0/go.mod h1:qMaeEZWbB2rN9qlKxo6gQtScpGCvOM4jimWBVKyD/HY=
+github.com/joshwi/go-pkg v0.0.1 h1:b3ns24D1eJYVKiV9Jwhk6QGnOE4F1fdE4NTdN3Sa8MA=
+github.com/joshwi/go-pkg v0.0.1/go.mod h1:8RCfPZhV4voqzoBDNm40o2boC53i0WOlQn6qBFjB0TE=
+github.com/joshwi/go-svc/db v0.0.1 h1:o9xs/XpzO3B/UWzbb6iquPSfgGAPelQyAvtbHooYixk=
+github.com/joshwi/go-svc/db v0.0.1/go.mod h1:msU95GJQXR8NIL4oVjD8FvYbvBNdMbko/ojmLQjxKaA=
 github.com/joshwi/go-svc/tags v0.0.1 h1:pobEHcPR/mA7MQQbrn7Eawsvlf/slZOteyVBmx6T1qQ=
 github.com/joshwi/go-svc/tags v0.0.1/go.mod h1:zj0h+LiUXMqU668Aw3i3mSvS5fWZKauUyksQ1wkL14c=
 github.com/neo4j/neo4j-go-driver/v4 v4.4.1/go.mod h1:NexOfrm4c317FVjekrhVV8pHBXgtMG5P6GeweJWCyo4=

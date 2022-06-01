@@ -1,0 +1,19 @@
+{
+    "genius_music_lyrics": {
+        "id": {
+            "name": "genius_music_lyrics",
+            "value": "music"
+        },
+        "parser": [
+            {
+                "name": "",
+                "match": [
+                    {
+                        "name": "(?ms)<div.*?id=\"lyrics-root\".*?>(?P<lyrics>(.*?))<div class=\"Lyrics__Footer",
+                        "value": {}
+                    }
+                ]
+            }
+        ]
+    }
+}

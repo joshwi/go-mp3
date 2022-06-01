@@ -15,28 +15,28 @@ import (
 
 var (
 	// Pull in env variables: username, password, uri
-	directory = os.Getenv("DIRECTORY")
-	username  = os.Getenv("NEO4J_USERNAME")
-	password  = os.Getenv("NEO4J_PASSWORD")
-	host      = os.Getenv("NEO4J_SERVICE_HOST")
-	port      = os.Getenv("NEO4J_SERVICE_PORT")
+	DIRECTORY = os.Getenv("DIRECTORY")
+	USERNAME  = os.Getenv("NEO4J_USERNAME")
+	PASSWORD  = os.Getenv("NEO4J_PASSWORD")
+	HOST      = os.Getenv("NEO4J_SERVICE_HOST")
+	PORT      = os.Getenv("NEO4J_SERVICE_PORT")
+	LOGFILE   = os.Getenv("LOGFILE")
 
 	// Init flag values
 	query    string
 	name     string
 	filename string
-	logfile  string
 )
 
 func init() {
 
 	// Define flag arguments for the application
 	flag.StringVar(&query, `q`, ``, `Run query to DB for input parameters. Default: <empty>`)
-	flag.StringVar(&logfile, `l`, `./run.log`, `Location of script logfile. Default: ./run.log`)
+
 	flag.Parse()
 
 	// Initialize logfile at user given path. Default: ./collection.log
-	logger.InitLog(logfile)
+	logger.InitLog(LOGFILE)
 
 	logger.Logger.Info().Str("filename", filename).Str("config", name).Str("query", query).Str("status", "start").Msg("LYRIC AUDIT")
 }
@@ -47,8 +47,8 @@ func main() {
 	var a1 = regexp.MustCompile(`\_{2,}`)
 
 	// Create application session with Neo4j
-	uri := "bolt://" + host + ":" + port
-	driver := db.Connect(uri, username, password)
+	uri := "bolt://" + HOST + ":" + PORT
+	driver := db.Connect(uri, USERNAME, PASSWORD)
 	sessionConfig := neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite}
 	session := driver.NewSession(sessionConfig)
 
@@ -91,7 +91,7 @@ func main() {
 		_, err := os.Stat(expected_filepath)
 		if os.IsNotExist(err) {
 			err = os.MkdirAll(path.Dir(expected_filepath), 0755)
-			os.Rename(directory+filepath, directory+expected_filepath)
+			os.Rename(DIRECTORY+filepath, DIRECTORY+expected_filepath)
 			db.PutNode(session, "music", label, []utils.Tag{{Name: "filepath", Value: expected_filepath}})
 		}
 

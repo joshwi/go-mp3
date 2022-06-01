@@ -13,14 +13,14 @@ import (
 )
 
 var (
-	directory = os.Getenv("DIRECTORY")
+	DIRECTORY = os.Getenv("DIRECTORY")
 	logfile   string
 )
 
 func init() {
 
 	// Define flag arguments for the application
-	flag.StringVar(&logfile, `l`, `./run.log`, `Location of script logfile. Default: ./run.log`)
+
 	flag.Parse()
 
 	// Initialize logfile at user given path. Default: ./collection.log
@@ -39,7 +39,7 @@ func main() {
 
 	m4a := []string{}
 
-	filetree, _ := utils.Scan(directory)
+	filetree, _ := utils.Scan(DIRECTORY)
 
 	for _, item := range filetree {
 		if strings.ToLower(filepath.Ext(item)) == ".m4a" {
@@ -48,12 +48,12 @@ func main() {
 	}
 
 	for _, entry := range m4a {
-		new_file := fmt.Sprintf("%v/m4a%v", directory, entry)
+		new_file := fmt.Sprintf("%v/m4a%v", DIRECTORY, entry)
 		_, err := os.Stat(new_file)
 		if os.IsNotExist(err) {
 			err = os.MkdirAll(path.Dir(new_file), 0755)
 		}
-		os.Rename(directory+entry, new_file)
+		os.Rename(DIRECTORY+entry, new_file)
 	}
 
 	logger.Logger.Info().Str("status", "end").Msg("MOVE M4A FILES")

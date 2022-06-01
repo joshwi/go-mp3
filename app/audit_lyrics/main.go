@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"html"
@@ -17,161 +18,187 @@ import (
 
 var (
 	// Pull in env variables: username, password, uri
-	username = os.Getenv("NEO4J_USERNAME")
-	password = os.Getenv("NEO4J_PASSWORD")
-	host     = os.Getenv("NEO4J_SERVICE_HOST")
-	port     = os.Getenv("NEO4J_SERVICE_PORT")
+	USERNAME   = os.Getenv("NEO4J_USERNAME")
+	PASSWORD   = os.Getenv("NEO4J_PASSWORD")
+	HOST       = os.Getenv("NEO4J_SERVICE_HOST")
+	PORT       = os.Getenv("NEO4J_SERVICE_PORT")
+	LOGFILE    = os.Getenv("LOGFILE")
+	config_dir = os.Getenv("CONFIG_DIR")
 
 	// Init flag values
-	query    string
-	name     string
-	filename string
-	logfile  string
+	query       string
+	name        string
+	NODE        string
+	FIELD       string
+	A1          string
+	A2          string
+	base_url    = "https://www.genius.com/"
+	parser_file = fmt.Sprintf("%v/parser.json", config_dir)
+	audit_file  = fmt.Sprintf("%v/audit.json", config_dir)
 )
 
 func init() {
 
 	// Define flag arguments for the application
-	flag.StringVar(&query, `q`, ``, `Run query to DB for input parameters. Default: <empty>`)
-	flag.StringVar(&name, `n`, `genius_song_lyrics`, `Specify config. Default: genius_song_lyrics`)
-	flag.StringVar(&filename, `f`, `./config/genius.json`, `Location of parsing config file. Default: ./config/genius.json`)
-	flag.StringVar(&logfile, `l`, `./run.log`, `Location of script logfile. Default: ./run.log`)
+	flag.StringVar(&query, `query`, ``, `Run query to DB for input parameters. Default: <empty>`)
+	flag.StringVar(&name, `config`, `genius_music_lyrics`, `Specify name of parser config. Default: genius_music_lyrics`)
+	flag.StringVar(&NODE, `node`, `music`, `Specify DB node. Default: music`)
+	flag.StringVar(&FIELD, `field`, `lyrics`, `Specify DB field to audit. Default: lyrics`)
+	flag.StringVar(&A1, `a1`, `audit_lyrics_url`, `Specify name of url audit. Default: audit_lyrics_url`)
+	flag.StringVar(&A2, `a2`, `audit_lyrics_html`, `Specify name of html audit. Default: audit_lyrics_html`)
 	flag.Parse()
 
 	// Initialize logfile at user given path. Default: ./collection.log
-	logger.InitLog(logfile)
+	logger.InitLog(LOGFILE)
 
-	logger.Logger.Info().Str("filename", filename).Str("config", name).Str("query", query).Str("status", "start").Msg("LYRIC AUDIT")
+	logger.Logger.Info().Str("config", name).Str("field", FIELD).Str("node", NODE).Str("query", query).Str("status", "start").Msg("LYRIC AUDIT")
+}
+
+func Init(file string, audit_one string, audit_two string) ([]utils.Match, []utils.Match, error) {
+
+	// Open file with parsing configurations
+	fileBytes, err := utils.Read(file)
+	if err != nil {
+		return []utils.Match{}, []utils.Match{}, err
+	}
+
+	// Unmarshall file into []Config struct
+	var configurations map[string][]utils.Tag
+	json.Unmarshal(fileBytes, &configurations)
+
+	// Get config by name
+	res_one := Compile(configurations[audit_one])
+	res_two := Compile(configurations[audit_two])
+
+	return res_one, res_two, nil
+}
+
+func Compile(input []utils.Tag) []utils.Match {
+	tags := []utils.Match{}
+	for _, n := range input {
+		r := regexp.MustCompile(n.Value)
+		exp := utils.Match{Name: n.Name, Value: *r}
+		tags = append(tags, exp)
+	}
+	return tags
+}
+
+func Run(input string, commands []utils.Match) string {
+	output := input
+	for _, entry := range commands {
+		output = entry.Value.ReplaceAllString(output, entry.Name)
+	}
+	return output
+}
+
+func req_worker(urls chan utils.Tag, songs chan utils.Tag, results chan error, config utils.Config, audit []utils.Match) {
+	for item := range urls {
+		response, _ := utils.Get(item.Value, map[string]string{})
+		if response.Status == 200 {
+			output := parser.Collect(response.Data, config.Parser)
+			field_present := false
+			for _, entry := range output.Tags {
+				if entry.Name == FIELD {
+					field_present = true
+					result := Run(entry.Value, audit)
+					result = html.UnescapeString(result)
+					songs <- utils.Tag{Name: item.Name, Value: result}
+					results <- nil
+				}
+			}
+			if !field_present {
+				songs <- utils.Tag{}
+				results <- fmt.Errorf("Response missing field: %v", "lyrics")
+			}
+		} else {
+			songs <- utils.Tag{}
+			results <- fmt.Errorf("%v %v", response.Status, response.Error)
+		}
+	}
+}
+
+func db_worker(songs chan utils.Tag, results chan error, driver neo4j.Driver, field string) {
+	for item := range songs {
+		if item.Name != "" && item.Value != "" {
+			sessionConfig := neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite}
+			session := driver.NewSession(sessionConfig)
+			err := db.PutNode(session, NODE, item.Name, []utils.Tag{{Name: field, Value: item.Value}})
+			if err != nil {
+				results <- err
+			}
+			results <- nil
+		} else {
+			results <- fmt.Errorf("Empty tag!")
+		}
+	}
 }
 
 func main() {
 
-	a0 := regexp.MustCompile(`[^a-zA-Z0-9\-\s]+`)
-	a1 := regexp.MustCompile(`[\.]+`)
-	a2 := regexp.MustCompile(`\s+`)
-
-	b0 := regexp.MustCompile(`<h2.*h2>`)
-	b1 := regexp.MustCompile(`<i>|<\/i>`)
-	b2 := regexp.MustCompile(`<[^>].*?>`)
-	b3 := regexp.MustCompile(`\n+`)
-	b4 := regexp.MustCompile(`\[`)
-	b5 := regexp.MustCompile(`\]`)
-	b6 := regexp.MustCompile(`\n$|^\n`)
-
-	base_url := "https://www.genius.com/"
-
-	config, err := parser.Init(name, filename)
+	config, err := parser.Init(name, parser_file)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	audit_in, audit_out, _ := Init(audit_file, A1, A2)
+
 	// Create application session with Neo4j
-	uri := "bolt://" + host + ":" + port
-	driver := db.Connect(uri, username, password)
+	uri := "bolt://" + HOST + ":" + PORT
+	driver := db.Connect(uri, USERNAME, PASSWORD)
 	sessionConfig := neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite}
 	session := driver.NewSession(sessionConfig)
 
-	audit_list := map[string]string{}
+	// Query DB to get audit search list
+	nodes, _ := db.GetNode(session, NODE, query, 0, []string{"label", "artist", "title"})
 
-	songs, _ := db.RunCypher(session, query)
-
-	for _, entry := range songs {
-		var label string
-		var artist string
-		var title string
-		for _, item := range entry {
-			if item.Name == "label" {
-				label = item.Value
-			}
-			if item.Name == "artist" {
-				artist = item.Value
-			}
-			if item.Name == "title" {
-				title = item.Value
-			}
-		}
-		param := fmt.Sprintf("%v-%v-lyrics", artist, title)
-		param = a0.ReplaceAllString(param, "")
-		param = a1.ReplaceAllString(param, "")
-		param = a2.ReplaceAllString(param, "-")
-		audit_list[label] = base_url + param
-	}
-
-	for k, v := range audit_list {
-		response, _ := utils.Get(v, map[string]string{})
-		if response.Status == 200 {
-			output := parser.Collect(response.Data, config.Parser)
-			for _, entry := range output.Tags {
-				if entry.Name == "lyrics" {
-					lyrics := b0.ReplaceAllString(entry.Value, "")
-					lyrics = b1.ReplaceAllString(lyrics, "")
-					lyrics = b2.ReplaceAllString(lyrics, "\n")
-					lyrics = b3.ReplaceAllString(lyrics, "\n")
-					lyrics = b4.ReplaceAllString(lyrics, "\n[")
-					lyrics = b5.ReplaceAllString(lyrics, "]\n")
-					lyrics = b6.ReplaceAllString(lyrics, "")
-					lyrics = html.UnescapeString(lyrics)
-					err := db.PutNode(session, "music", k, []utils.Tag{{Name: "lyrics", Value: lyrics}})
-					if err != nil {
-						log.Println(err)
-					}
-				}
-			}
+	url_list := []utils.Tag{}
+	for _, entry := range nodes {
+		if entry["label"] != "" && entry["artist"] != "" && entry["title"] != "" {
+			param := fmt.Sprintf("%v-%v-lyrics", entry["artist"], entry["title"])
+			param = Run(param, audit_in)
+			url_list = append(url_list, utils.Tag{Name: entry["label"], Value: base_url + param})
 		}
 	}
 
-	logger.Logger.Info().Str("filename", filename).Str("config", name).Str("query", query).Str("status", "end").Msg("LYRIC AUDIT")
+	// Create channels for data flow and error reporting
+	urls := make(chan utils.Tag, 10)
+	songs := make(chan utils.Tag, 10)
+	req_err := make(chan error)
+	db_err := make(chan error)
+
+	// Input the url search list into channel
+	go func() {
+		for _, entry := range url_list {
+			urls <- entry
+		}
+	}()
+
+	// Run HTTP request worker to gather data
+	for i := 0; i < cap(urls); i++ {
+		go req_worker(urls, songs, req_err, config, audit_out)
+	}
+
+	songlist := make([]utils.Tag, len(url_list))
+
+	for i := 0; i < cap(songlist); i++ {
+		go db_worker(songs, db_err, driver, FIELD)
+	}
+
+	req_err_list := []error{}
+	db_err_list := []error{}
+
+	for range url_list {
+		entry := <-req_err
+		req_err_list = append(req_err_list, entry)
+		item := <-db_err
+		db_err_list = append(db_err_list, item)
+
+	}
+
+	close(urls)
+	close(songs)
+	close(req_err)
+	close(db_err)
+
+	logger.Logger.Info().Str("config", name).Str("field", FIELD).Str("node", NODE).Str("query", query).Str("status", "end").Msg("LYRIC AUDIT")
 }
-
-// package main
-
-// import (
-// 	"fmt"
-// 	"io/ioutil"
-// 	"log"
-// 	"net/http"
-// 	"regexp"
-// )
-
-// func Search(url string, items []regexp.Regexp) []string {
-// 	output := []string{}
-// 	client := &http.Client{}
-// 	resp, _ := client.Get(url)
-// 	if resp.StatusCode == 200 {
-// 		body, _ := ioutil.ReadAll(resp.Body)
-// 		log.Println(url, resp.StatusCode)
-// 		for _, entry := range items {
-// 			results := entry.FindAllString(string(string(body)), -1)
-// 			output = append(output, results...)
-// 		}
-// 	}
-// 	return output
-// }
-// func main() {
-
-// 	r0 := regexp.MustCompile(`^href=\"`)
-// 	r1 := regexp.MustCompile(`\"$`)
-
-// 	base_url := "https://genius.com/artists"
-
-// 	search_urls := []string{"https://genius.com/artists", "https://genius.com/albums", "https://genius.com/artists"}
-
-// 	patterns := []regexp.Regexp{}
-
-// 	for _, entry := range search_urls {
-// 		patterns = append(patterns, *regexp.MustCompile(fmt.Sprintf("href=\"%v.*?\"", entry)))
-// 	}
-
-// 	output := []string{}
-
-// 	results := Search(base_url, patterns)
-
-// 	for _, entry := range results {
-// 		temp := r0.ReplaceAllString(entry, "")
-// 		temp = r1.ReplaceAllString(temp, "")
-// 		output = append(output, temp)
-// 	}
-
-// 	log.Println(output)
-
-// }

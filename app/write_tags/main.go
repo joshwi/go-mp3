@@ -13,11 +13,11 @@ import (
 )
 
 var (
-	directory = os.Getenv("DIRECTORY")
-	username  = os.Getenv("NEO4J_USERNAME")
-	password  = os.Getenv("NEO4J_PASSWORD")
-	host      = os.Getenv("NEO4J_SERVICE_HOST")
-	port      = os.Getenv("NEO4J_SERVICE_PORT")
+	DIRECTORY = os.Getenv("DIRECTORY")
+	USERNAME  = os.Getenv("NEO4J_USERNAME")
+	PASSWORD  = os.Getenv("NEO4J_PASSWORD")
+	HOST      = os.Getenv("NEO4J_SERVICE_HOST")
+	PORT      = os.Getenv("NEO4J_SERVICE_PORT")
 	types     = map[string]string{
 		"title":    "TIT2",
 		"album":    "TALB",
@@ -39,7 +39,7 @@ func init() {
 
 	// Define flag arguments for the application
 	flag.StringVar(&query, `q`, ``, `Run query to DB for input parameters. Default: <empty>`)
-	flag.StringVar(&logfile, `l`, `./run.log`, `Location of script logfile. Default: ./run.log`)
+
 	flag.Parse()
 
 	// Initialize logfile at user given path. Default: ./collection.log
@@ -51,8 +51,8 @@ func init() {
 func main() {
 
 	// Create application session with Neo4j
-	uri := "bolt://" + host + ":" + port
-	driver := db.Connect(uri, username, password)
+	uri := "bolt://" + HOST + ":" + PORT
+	driver := db.Connect(uri, USERNAME, PASSWORD)
 	sessionConfig := neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite}
 	session := driver.NewSession(sessionConfig)
 
@@ -65,12 +65,12 @@ func main() {
 				filepath = item.Value
 			}
 		}
-		_, err := os.Stat(directory + filepath)
+		_, err := os.Stat(DIRECTORY + filepath)
 		if os.IsNotExist(err) {
 			log.Println(song)
 			log.Fatal(err)
 		}
-		err = tags.WriteTags(directory, filepath, song)
+		err = tags.WriteTags(DIRECTORY, filepath, song)
 		if err != nil {
 			log.Fatal(err)
 		}
